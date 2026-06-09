@@ -1,0 +1,176 @@
+-- =============================================
+-- Multimedia Platform - Script de base de datos
+-- SQL Server
+-- =============================================
+
+USE master;
+GO
+
+CREATE DATABASE MultimediaPlatform
+    COLLATE SQL_Latin1_General_CP1_CI_AS;
+GO
+
+USE MultimediaPlatform;
+GO
+
+-- =============================================
+-- Tabla: Users
+-- =============================================
+CREATE TABLE Users (
+    Id            UNIQUEIDENTIFIER   NOT NULL DEFAULT NEWSEQUENTIALID(),
+    Name          NVARCHAR(100)      NOT NULL,
+    Email         NVARCHAR(256)      NOT NULL,
+    PasswordHash  NVARCHAR(512)      NOT NULL,
+    Role          NVARCHAR(50)       NOT NULL DEFAULT 'User',  -- 'Admin', 'User'
+    IsActive      BIT                NOT NULL DEFAULT 1,
+    CreatedAt     DATETIME2          NOT NULL DEFAULT GETUTCDATE(),
+    UpdatedAt     DATETIME2          NULL,
+
+    CONSTRAINT PK_Users          PRIMARY KEY (Id),
+    CONSTRAINT UQ_Users_Email    UNIQUE      (Email),
+    CONSTRAINT CK_Users_Role     CHECK       (Role IN ('Admin', 'User'))
+);
+GO
+
+-- =============================================
+-- Tabla: Portfolios
+-- =============================================
+CREATE TABLE Portfolios (
+    Id           UNIQUEIDENTIFIER   NOT NULL DEFAULT NEWSEQUENTIALID(),
+    Name         NVARCHAR(150)      NOT NULL,
+    Description  NVARCHAR(500)      NULL,
+    IsPublic     BIT                NOT NULL DEFAULT 0,
+    UserId       UNIQUEIDENTIFIER   NOT NULL,
+    CreatedAt    DATETIME2          NOT NULL DEFAULT GETUTCDATE(),
+    UpdatedAt    DATETIME2          NULL,
+
+    CONSTRAINT PK_Portfolios        PRIMARY KEY (Id),
+    CONSTRAINT FK_Portfolios_Users  FOREIGN KEY (UserId)
+        REFERENCES Users (Id) ON DELETE CASCADE
+);
+GO
+
+-- =============================================
+-- Tabla: Albums
+-- =============================================
+CREATE TABLE Albums (
+    Id            UNIQUEIDENTIFIER   NOT NULL DEFAULT NEWSEQUENTIALID(),
+    Name          NVARCHAR(150)      NOT NULL,
+    Description   NVARCHAR(500)      NULL,
+    PortfolioId   UNIQUEIDENTIFIER   NOT NULL,
+    CreatedAt     DATETIME2          NOT NULL DEFAULT GETUTCDATE(),
+    UpdatedAt     DATETIME2          NULL,
+
+    CONSTRAINT PK_Albums             PRIMARY KEY (Id),
+    CONSTRAINT FK_Albums_Portfolios  FOREIGN KEY (PortfolioId)
+        REFERENCES Portfolios (Id) ON DELETE CASCADE
+);
+GO
+
+-- =============================================
+-- Tabla: MediaFiles
+-- Almacena metadatos; los archivos físicos van
+-- en el volumen local (Storage/)
+-- =============================================
+CREATE TABLE MediaFiles (
+    Id              UNIQUEIDENTIFIER   NOT NULL DEFAULT NEWSEQUENTIALID(),
+    FileName        NVARCHAR(260)      NOT NULL,
+    FilePath        NVARCHAR(1000)     NOT NULL,   -- Storage/images/ o Storage/videos/
+    OptimizedPath   NVARCHAR(1000)     NULL,        -- Storage/optimized/
+    ThumbnailPath   NVARCHAR(1000)     NULL,        -- Storage/thumbnails/
+    FileType        NVARCHAR(10)       NOT NULL,    -- 'image' | 'video'
+    MimeType        NVARCHAR(100)      NULL,        -- 'image/webp', 'video/mp4', etc.
+    FileSize        BIGINT             NOT NULL DEFAULT 0,  -- bytes
+    Width           INT                NULL,
+    Height          INT                NULL,
+    DurationSeconds INT                NULL,        -- solo videos
+    Status          NVARCHAR(30)       NOT NULL DEFAULT 'Pending',
+    UserId          UNIQUEIDENTIFIER   NOT NULL,
+    AlbumId         UNIQUEIDENTIFIER   NULL,
+    UploadDate      DATETIME2          NOT NULL DEFAULT GETUTCDATE(),
+    ProcessedDate   DATETIME2          NULL,
+
+    CONSTRAINT PK_MediaFiles             PRIMARY KEY (Id),
+    CONSTRAINT FK_MediaFiles_Users       FOREIGN KEY (UserId)
+        REFERENCES Users (Id),
+    CONSTRAINT FK_MediaFiles_Albums      FOREIGN KEY (AlbumId)
+        REFERENCES Albums (Id) ON DELETE SET NULL,
+    CONSTRAINT CK_MediaFiles_FileType    CHECK (FileType IN ('image', 'video')),
+    CONSTRAINT CK_MediaFiles_Status      CHECK (Status IN (
+        'Pending', 'Processing', 'Optimized', 'Failed'
+    ))
+);
+GO
+
+-- =============================================
+-- Tabla: Tags
+-- Etiquetas generadas por el servicio de IA
+-- o añadidas manualmente
+-- =============================================
+CREATE TABLE Tags (
+    Id            UNIQUEIDENTIFIER   NOT NULL DEFAULT NEWSEQUENTIALID(),
+    MediaFileId   UNIQUEIDENTIFIER   NOT NULL,
+    Name          NVARCHAR(100)      NOT NULL,
+    Source        NVARCHAR(20)       NOT NULL DEFAULT 'AI',  -- 'AI' | 'Manual'
+    Confidence    FLOAT              NULL,   -- 0.0 - 1.0, solo para etiquetas IA
+
+    CONSTRAINT PK_Tags              PRIMARY KEY (Id),
+    CONSTRAINT FK_Tags_MediaFiles   FOREIGN KEY (MediaFileId)
+        REFERENCES MediaFiles (Id) ON DELETE CASCADE,
+    CONSTRAINT CK_Tags_Source       CHECK (Source IN ('AI', 'Manual')),
+    CONSTRAINT UQ_Tags_FileTag      UNIQUE (MediaFileId, Name)
+);
+GO
+
+-- =============================================
+-- Tabla: Comments
+-- =============================================
+CREATE TABLE Comments (
+    Id            UNIQUEIDENTIFIER   NOT NULL DEFAULT NEWSEQUENTIALID(),
+    MediaFileId   UNIQUEIDENTIFIER   NOT NULL,
+    UserId        UNIQUEIDENTIFIER   NOT NULL,
+    Content       NVARCHAR(2000)     NOT NULL,
+    CreatedAt     DATETIME2          NOT NULL DEFAULT GETUTCDATE(),
+    UpdatedAt     DATETIME2          NULL,
+
+    CONSTRAINT PK_Comments               PRIMARY KEY (Id),
+    CONSTRAINT FK_Comments_MediaFiles    FOREIGN KEY (MediaFileId)
+        REFERENCES MediaFiles (Id) ON DELETE CASCADE,
+    CONSTRAINT FK_Comments_Users         FOREIGN KEY (UserId)
+        REFERENCES Users (Id)
+);
+GO
+
+-- =============================================
+-- Tabla: RefreshTokens
+-- Soporta POST /auth/refresh del Auth Service
+-- =============================================
+CREATE TABLE RefreshTokens (
+    Id          UNIQUEIDENTIFIER   NOT NULL DEFAULT NEWSEQUENTIALID(),
+    UserId      UNIQUEIDENTIFIER   NOT NULL,
+    Token       NVARCHAR(512)      NOT NULL,
+    ExpiresAt   DATETIME2          NOT NULL,
+    RevokedAt   DATETIME2          NULL,
+    CreatedAt   DATETIME2          NOT NULL DEFAULT GETUTCDATE(),
+
+    CONSTRAINT PK_RefreshTokens        PRIMARY KEY (Id),
+    CONSTRAINT UQ_RefreshTokens_Token  UNIQUE      (Token),
+    CONSTRAINT FK_RefreshTokens_Users  FOREIGN KEY (UserId)
+        REFERENCES Users (Id) ON DELETE CASCADE
+);
+GO
+
+-- =============================================
+-- Índices de rendimiento
+-- =============================================
+CREATE INDEX IX_Portfolios_UserId    ON Portfolios  (UserId);
+CREATE INDEX IX_Albums_PortfolioId   ON Albums      (PortfolioId);
+CREATE INDEX IX_MediaFiles_UserId    ON MediaFiles  (UserId);
+CREATE INDEX IX_MediaFiles_AlbumId   ON MediaFiles  (AlbumId);
+CREATE INDEX IX_MediaFiles_Status    ON MediaFiles  (Status);
+CREATE INDEX IX_MediaFiles_FileType  ON MediaFiles  (FileType);
+CREATE INDEX IX_Tags_MediaFileId     ON Tags        (MediaFileId);
+CREATE INDEX IX_Tags_Name            ON Tags        (Name);
+CREATE INDEX IX_Comments_MediaFileId ON Comments    (MediaFileId);
+CREATE INDEX IX_RefreshTokens_UserId ON RefreshTokens (UserId);
+GO

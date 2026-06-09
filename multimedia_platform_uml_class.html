@@ -1,0 +1,123 @@
+
+<style>
+#uml { padding: 1rem 0; }
+#uml svg { width: 100%; }
+</style>
+<div id="uml"></div>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"Anthropic Sans", sans-serif',
+  themeVariables: {
+    darkMode: dark,
+    fontSize: '13px',
+    fontFamily: '"Anthropic Sans", sans-serif',
+    lineColor: dark ? '#9c9a92' : '#73726c',
+    textColor: dark ? '#c2c0b6' : '#3d3d3a',
+    classText: dark ? '#c2c0b6' : '#3d3d3a',
+    primaryColor: dark ? '#2a2a2a' : '#f5f4f0',
+    primaryBorderColor: dark ? '#5a5855' : '#b0aea6',
+    secondaryColor: dark ? '#1e1e1e' : '#eae9e4',
+    tertiaryColor: dark ? '#161616' : '#e0dfd9',
+  },
+});
+
+const diagram = `classDiagram
+  direction TB
+
+  class User {
+    +Guid Id
+    +string Name
+    +string Email
+    -string PasswordHash
+    +string Role
+    +bool IsActive
+    +DateTime CreatedAt
+    +Register() void
+    +Login() string
+    +UpdateProfile() void
+  }
+
+  class Portfolio {
+    +Guid Id
+    +string Name
+    +string Description
+    +bool IsPublic
+    +Guid UserId
+    +DateTime CreatedAt
+    +AddAlbum(album) void
+    +GetAlbums() List~Album~
+  }
+
+  class Album {
+    +Guid Id
+    +string Name
+    +string Description
+    +Guid PortfolioId
+    +DateTime CreatedAt
+    +AddMediaFile(file) void
+    +GetMediaFiles() List~MediaFile~
+  }
+
+  class MediaFile {
+    +Guid Id
+    +string FileName
+    +string FilePath
+    +string OptimizedPath
+    +string ThumbnailPath
+    +string FileType
+    +string MimeType
+    +long FileSize
+    +string Status
+    +Guid UserId
+    +Guid AlbumId
+    +DateTime UploadDate
+    +Optimize() void
+    +GenerateThumbnail() void
+  }
+
+  class Tag {
+    +Guid Id
+    +Guid MediaFileId
+    +string Name
+    +string Source
+    +float Confidence
+  }
+
+  class Comment {
+    +Guid Id
+    +Guid MediaFileId
+    +Guid UserId
+    +string Content
+    +DateTime CreatedAt
+    +Edit(content) void
+    +Delete() void
+  }
+
+  class RefreshToken {
+    +Guid Id
+    +Guid UserId
+    +string Token
+    +DateTime ExpiresAt
+    +DateTime RevokedAt
+    +bool IsActive()
+    +Revoke() void
+  }
+
+  User "1" --> "0..*" Portfolio : owns
+  User "1" --> "0..*" MediaFile : uploads
+  User "1" --> "0..*" Comment : writes
+  User "1" --> "0..*" RefreshToken : has
+  Portfolio "1" --> "1..*" Album : contains
+  Album "1" --> "0..*" MediaFile : groups
+  MediaFile "1" --> "0..*" Tag : tagged with
+  MediaFile "1" --> "0..*" Comment : receives
+`;
+
+const { svg } = await mermaid.render('uml-svg', diagram);
+document.getElementById('uml').innerHTML = svg;
+</script>
