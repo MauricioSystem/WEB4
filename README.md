@@ -1,24 +1,54 @@
-# 📁 MediaVault
+# Multimedia Platform
 
-Sistema de gestión de archivos multimedia desarrollado con **ASP.NET Core**, **React + TypeScript** y **SQL Server**, siguiendo los principios de **Arquitectura Hexagonal**.
+## Proyecto Universitario
 
----
+Sistema de gestión multimedia desarrollado con .NET 10 y React + TypeScript.
 
-# Descripción
-
-MediaVault es una plataforma que permite a los usuarios almacenar, organizar y administrar imágenes y videos mediante portafolios personalizados.
-
-Cada usuario dispone de un espacio de almacenamiento limitado y puede gestionar sus archivos multimedia, consultar metadatos, modificarlos y descargar versiones actualizadas.
+La plataforma permitirá almacenar, organizar y gestionar imágenes y videos mediante una arquitectura basada en Docker y servicios especializados.
 
 ---
 
-# Objetivos
+# Objetivo
 
-* Centralizar la gestión de imágenes y videos.
-* Organizar contenido mediante portafolios.
-* Administrar metadatos multimedia.
-* Controlar el uso de almacenamiento por usuario.
-* Aplicar Arquitectura Hexagonal para mantener un sistema escalable y mantenible.
+Desarrollar una plataforma web donde los usuarios puedan:
+
+* Registrarse e iniciar sesión.
+* Crear portafolios multimedia.
+* Crear álbumes.
+* Subir imágenes.
+* Subir videos.
+* Organizar contenido.
+* Buscar contenido.
+* Utilizar herramientas de Inteligencia Artificial.
+* Optimizar archivos multimedia automáticamente.
+
+---
+
+# Arquitectura General
+
+```text
+                    INTERNET
+                         |
+                      NGINX
+                         |
+      ----------------------------------
+      |               |                |
+      |               |                |
+ Auth Service   Multimedia API    IA Service
+      |               |
+      |               |
+      |          RabbitMQ
+      |               |
+      |               |
+      |        Media Processor
+      |               |
+      -----------------
+              |
+         SQL Server
+
+              |
+       Local Storage
+```
 
 ---
 
@@ -26,382 +56,442 @@ Cada usuario dispone de un espacio de almacenamiento limitado y puede gestionar 
 
 ## Backend
 
-* ASP.NET Core 9
-* C#
+* .NET 10
+* ASP.NET Core
 * Entity Framework Core
 * SQL Server
-* JWT Authentication
-* AutoMapper
-* FluentValidation
 
 ## Frontend
 
 * React
 * TypeScript
 * Vite
-* React Router
-* Axios
-* Material UI
 
-## Base de Datos
+## Infraestructura
 
-* SQL Server
-* EF Core Migrations
+* Docker
+* Docker Compose
+* NGINX
+* RabbitMQ
+
+## Multimedia
+
+* FFmpeg
+* ImageSharp
+
+## Inteligencia Artificial
+
+* OpenAI API
+* Ollama (opcional)
 
 ---
 
-# Arquitectura
+# Contenedores
 
-El proyecto sigue una Arquitectura Hexagonal (Ports and Adapters).
+## NGINX
+
+Responsabilidades:
+
+* Reverse Proxy
+* Entrada principal del sistema
+* Redirección de solicitudes
+
+Rutas:
 
 ```text
-┌──────────────────────────┐
-│       React Client       │
-└────────────┬─────────────┘
-             │ HTTP
-             ▼
-
-┌──────────────────────────┐
-│         Web API          │
-└────────────┬─────────────┘
-             │
-             ▼
-
-┌──────────────────────────┐
-│      Application         │
-│      Use Cases           │
-└────────────┬─────────────┘
-             │
-             ▼
-
-┌──────────────────────────┐
-│         Domain           │
-│ Business Rules & Models  │
-└────────────┬─────────────┘
-             │
-             ▼
-
-┌──────────────────────────┐
-│      Infrastructure      │
-│ SQL Server / Storage     │
-└──────────────────────────┘
+/auth/*
+/api/*
+/ai/*
 ```
 
 ---
 
-# Funcionalidades
+## Auth Service
 
-## Autenticación
+Responsabilidades:
 
-* Registro de usuarios
-* Inicio de sesión
-* JWT Authentication
-* Gestión de perfil
+* Registro
+* Login
+* JWT
+* Roles
+* Permisos
+
+Tecnología:
+
+```text
+.NET 10
+```
+
+Endpoints:
+
+```text
+POST /auth/register
+POST /auth/login
+POST /auth/refresh
+```
 
 ---
 
-## Gestión de Portafolios
+## Multimedia API
 
-* Crear portafolio
-* Editar portafolio
-* Eliminar portafolio
-* Listar portafolios
+Es el núcleo del sistema.
+
+Responsabilidades:
+
+* Usuarios
+* Portafolios
+* Álbumes
+* Imágenes
+* Videos
+* Comentarios
+* Compartir contenido
+
+Arquitectura:
+
+```text
+Onion Architecture
+
+Domain
+Application
+Infrastructure
+Presentation
+```
+
+---
+
+## IA Service
+
+Responsabilidades:
+
+* Chat IA
+* Etiquetado automático
+* Descripción automática
+* Búsqueda inteligente
 
 Ejemplos:
 
-* Viajes
-* Trabajo
-* Universidad
-* Redes Sociales
+```text
+Mostrar fotos de playa
+
+Mostrar videos de vacaciones
+
+Buscar imágenes con perros
+```
 
 ---
 
-## Gestión de Archivos
+## Media Processor
 
-### Imágenes
+Responsabilidades:
 
-Formatos soportados:
+* Optimización de imágenes
+* Compresión de videos
+* Conversión de formatos
+* Generación de miniaturas
 
-* JPG
-* JPEG
-* PNG
-* WEBP
+Herramientas:
 
-### Videos
-
-Formatos soportados:
-
-* MP4
-* AVI
-* MOV
-
-Operaciones:
-
-* Subir archivo
-* Visualizar archivo
-* Descargar archivo
-* Eliminar archivo
+```text
+FFmpeg
+ImageSharp
+```
 
 ---
 
-## Metadatos
+## RabbitMQ
 
-El sistema permite visualizar y editar metadatos.
+Responsabilidades:
 
-### Imágenes
+* Comunicación asíncrona
+* Procesamiento en segundo plano
 
-* Nombre
-* Autor
-* Descripción
-* Etiquetas
-* Fecha de creación
-* Resolución
+Eventos:
 
-### Videos
-
-* Nombre
-* Autor
-* Descripción
-* Etiquetas
-* Duración
-* Resolución
+```text
+ImageUploaded
+VideoUploaded
+ImageOptimized
+VideoOptimized
+```
 
 ---
 
-## Control de Almacenamiento
+## SQL Server
 
-Cada usuario posee una cuota máxima configurable.
+Responsabilidades:
+
+* Persistencia de datos
+
+Almacena:
+
+```text
+Usuarios
+Roles
+Portafolios
+Álbumes
+Metadatos
+Etiquetas IA
+```
+
+No almacena:
+
+```text
+Imágenes
+Videos
+```
+
+---
+
+# Almacenamiento Local
+
+Las imágenes y videos serán almacenados en una carpeta compartida del host.
+
+Estructura:
+
+```text
+Storage
+
+├── images
+├── videos
+├── thumbnails
+└── optimized
+```
 
 Ejemplo:
 
 ```text
-Espacio Total: 10 GB
-Espacio Utilizado: 4.2 GB
-Disponible: 5.8 GB
-```
+Storage/images/foto1.webp
 
-Al intentar superar el límite:
+Storage/videos/video1.mp4
 
-```text
-Error:
-Espacio de almacenamiento insuficiente.
+Storage/thumbnails/video1.jpg
+
+Storage/optimized/foto1.webp
 ```
 
 ---
 
-# Estructura de Carpetas
+# Flujo de Imagen
 
 ```text
-src
+Usuario
 
-├── Domain
-│   ├── Entities
-│   ├── ValueObjects
-│   ├── Interfaces
-│   └── Rules
-│
-├── Application
-│   ├── DTOs
-│   ├── Services
-│   ├── Commands
-│   ├── Queries
-│   └── UseCases
-│
-├── Infrastructure
-│   ├── Persistence
-│   ├── Repositories
-│   ├── Storage
-│   └── Security
-│
-├── WebAPI
-│   ├── Controllers
-│   ├── Middleware
-│   └── Configuration
-│
-└── Frontend
-    ├── components
-    ├── pages
-    ├── hooks
-    ├── services
-    └── routes
+↓
+
+React
+
+↓
+
+Multimedia API
+
+↓
+
+Storage/images
+
+↓
+
+RabbitMQ
+
+↓
+
+Media Processor
+
+↓
+
+Storage/optimized
+
+↓
+
+SQL Server
 ```
 
 ---
 
-# Modelo de Datos
+# Flujo de Video
 
-## Usuarios
+```text
+Usuario
+
+↓
+
+React
+
+↓
+
+Multimedia API
+
+↓
+
+Storage/videos
+
+↓
+
+RabbitMQ
+
+↓
+
+Media Processor
+
+↓
+
+FFmpeg
+
+↓
+
+Storage/optimized
+
+↓
+
+Thumbnail
+
+↓
+
+SQL Server
+```
+
+---
+
+# Base de Datos
+
+Entidades principales:
+
+## User
 
 ```text
 Id
-Nombre
+Name
 Email
 PasswordHash
-EspacioMaximoMB
-EspacioUsadoMB
-FechaRegistro
-Estado
+Role
 ```
 
-## Portafolios
+## Portfolio
 
 ```text
 Id
-UsuarioId
-Nombre
-Descripcion
-FechaCreacion
-FechaActualizacion
+Name
+Description
+UserId
 ```
 
-## Archivos
+## Album
 
 ```text
 Id
-PortafolioId
-NombreOriginal
-NombreFisico
-RutaArchivo
-TipoArchivo
-Extension
-TamanoBytes
-FechaSubida
-Ancho
-Alto
-Duracion
-Estado
+Name
+PortfolioId
 ```
 
-## Metadatos
+## MediaFile
 
 ```text
 Id
-ArchivoId
-Clave
-Valor
+FileName
+FilePath
+FileType
+FileSize
+UploadDate
+UserId
+AlbumId
 ```
 
-## Etiquetas
+---
+
+# Estructura del Repositorio
 
 ```text
-Id
-Nombre
+multimedia-platform
+
+backend
+│
+├── auth-service
+├── multimedia-api
+├── ai-service
+└── media-processor
+
+frontend
+│
+└── react-app
+
+storage
+│
+├── images
+├── videos
+├── thumbnails
+└── optimized
+
+infra
+│
+├── nginx
+│
+└── docker-compose.yml
 ```
 
-## ArchivoEtiquetas
+---
+
+# Docker Compose
+
+Contenedores:
 
 ```text
-ArchivoId
-EtiquetaId
+nginx
+auth-service
+multimedia-api
+ai-service
+media-processor
+rabbitmq
+sqlserver
+```
+
+Total:
+
+```text
+7 contenedores
 ```
 
 ---
 
-# Casos de Uso
+# Roadmap
 
-### Usuario
+## Fase 1
 
-* Registrarse
-* Iniciar sesión
-* Consultar almacenamiento
+* Registro
+* Login
+* JWT
+* Portafolios
 
-### Portafolio
+## Fase 2
 
-* Crear
-* Editar
-* Eliminar
-* Visualizar
+* Álbumes
+* Subida de imágenes
 
-### Archivo
+## Fase 3
 
-* Subir
-* Visualizar
-* Descargar
-* Eliminar
+* Subida de videos
+* Optimización multimedia
 
-### Metadatos
+## Fase 4
 
-* Consultar
-* Editar
+* Chat IA
 
----
+## Fase 5
 
-# API REST
-
-## Auth
-
-```http
-POST /api/auth/register
-POST /api/auth/login
-```
-
-## Portafolios
-
-```http
-GET    /api/portafolios
-POST   /api/portafolios
-PUT    /api/portafolios/{id}
-DELETE /api/portafolios/{id}
-```
-
-## Archivos
-
-```http
-GET    /api/archivos
-POST   /api/archivos/upload
-GET    /api/archivos/{id}
-DELETE /api/archivos/{id}
-```
-
-## Metadatos
-
-```http
-GET /api/archivos/{id}/metadata
-PUT /api/archivos/{id}/metadata
-```
-
-## Descargas
-
-```http
-GET /api/archivos/{id}/download
-```
-
-## Almacenamiento
-
-```http
-GET /api/usuarios/storage
-```
+* Búsqueda inteligente
 
 ---
 
-# Requisitos No Funcionales
+# Objetivo Académico
 
-* Arquitectura Hexagonal
-* JWT Authentication
-* Validación de datos
-* Escalabilidad
-* Seguridad de archivos
-* Auditoría de operaciones
-* Migraciones automáticas
-* Separación Frontend y Backend
+Demostrar el uso de:
 
----
+* Arquitectura Onion
+* Docker
+* RabbitMQ
+* SQL Server
+* React + TypeScript
+* .NET 10
+* Procesamiento multimedia
+* Integración con Inteligencia Artificial
+* Comunicación entre servicios
 
-# Futuras Mejoras
-
-* Compartir archivos mediante enlaces.
-* Compartir portafolios.
-* Miniaturas automáticas.
-* Papelera de reciclaje.
-* Versionado de archivos.
-* Búsqueda avanzada.
-* Dashboard estadístico.
-* Roles de Administrador y Usuario.
-* Integración con Azure Blob Storage.
-* Integración con AWS S3.
-
----
-
-# Autor
-
-Proyecto académico desarrollado para demostrar la implementación de una plataforma de gestión multimedia utilizando Arquitectura Hexagonal con ASP.NET Core, React y SQL Server.
+sin necesidad de desplegar en la nube ni utilizar infraestructura distribuida compleja.
