@@ -1,54 +1,26 @@
-# Multimedia Platform
+# Gestor Multimedia
 
-## Proyecto Universitario
+## Descripción General
 
-Sistema de gestión multimedia desarrollado con .NET 10 y React + TypeScript.
+Gestor Multimedia es una plataforma web desarrollada bajo una arquitectura de microservicios para la gestión de imágenes y videos.
 
-La plataforma permitirá almacenar, organizar y gestionar imágenes y videos mediante una arquitectura basada en Docker y servicios especializados.
+La aplicación permite a los usuarios registrarse, autenticarse mediante JWT, organizar contenido multimedia en portafolios, interactuar con un asistente de inteligencia artificial y ejecutar procesos automatizados mediante N8N.
 
----
-
-# Objetivo
-
-Desarrollar una plataforma web donde los usuarios puedan:
-
-* Registrarse e iniciar sesión.
-* Crear portafolios multimedia.
-* Crear álbumes.
-* Subir imágenes.
-* Subir videos.
-* Organizar contenido.
-* Buscar contenido.
-* Utilizar herramientas de Inteligencia Artificial.
-* Optimizar archivos multimedia automáticamente.
+La solución está diseñada para ejecutarse completamente mediante Docker y Docker Compose en un entorno local.
 
 ---
 
-# Arquitectura General
+# Objetivos del Proyecto
 
-```text
-                    INTERNET
-                         |
-                      NGINX
-                         |
-      ----------------------------------
-      |               |                |
-      |               |                |
- Auth Service   Multimedia API    IA Service
-      |               |
-      |               |
-      |          RabbitMQ
-      |               |
-      |               |
-      |        Media Processor
-      |               |
-      -----------------
-              |
-         SQL Server
-
-              |
-       Local Storage
-```
+* Gestionar imágenes y videos.
+* Implementar autenticación basada en JWT.
+* Aplicar arquitectura de microservicios.
+* Utilizar SQL Server con Entity Framework Core y migraciones.
+* Integrar servicios de Inteligencia Artificial mediante API externas.
+* Integrar automatizaciones mediante N8N.
+* Implementar comunicación asíncrona mediante RabbitMQ.
+* Utilizar Nginx como Reverse Proxy.
+* Contenerizar toda la solución utilizando Docker.
 
 ---
 
@@ -57,8 +29,9 @@ Desarrollar una plataforma web donde los usuarios puedan:
 ## Backend
 
 * .NET 10
-* ASP.NET Core
+* ASP.NET Core Web API
 * Entity Framework Core
+* JWT Authentication
 * SQL Server
 
 ## Frontend
@@ -71,427 +44,339 @@ Desarrollar una plataforma web donde los usuarios puedan:
 
 * Docker
 * Docker Compose
-* NGINX
-* RabbitMQ
+* Nginx
 
-## Multimedia
+## Mensajería
 
-* FFmpeg
-* ImageSharp
+* RabbitMQ (Opcional)
+
+## Automatización
+
+* N8N
 
 ## Inteligencia Artificial
 
-* OpenAI API
-* Ollama (opcional)
+* OpenAI API / Gemini API (Opcional)
 
 ---
 
-# Contenedores
-
-## NGINX
-
-Responsabilidades:
-
-* Reverse Proxy
-* Entrada principal del sistema
-* Redirección de solicitudes
-
-Rutas:
+# Arquitectura General
 
 ```text
-/auth/*
-/api/*
-/ai/*
+                    Usuario
+                       |
+                    Nginx
+                       |
+            ---------------------
+            |                   |
+            |                   |
+        Auth API        Multimedia API
+            |                   |
+            |                   |
+            ---------------------
+                       |
+                  SQL Server
+
+                       |
+                  RabbitMQ
+                       |
+                      N8N
 ```
 
 ---
 
-## Auth Service
+# Microservicios
 
-Responsabilidades:
+## Auth API
 
-* Registro
-* Login
-* JWT
-* Roles
-* Permisos
+Responsable de:
 
-Tecnología:
-
-```text
-.NET 10
-```
-
-Endpoints:
-
-```text
-POST /auth/register
-POST /auth/login
-POST /auth/refresh
-```
+* Registro de usuarios.
+* Inicio de sesión.
+* Generación de JWT.
+* Gestión de perfiles.
+* Control de acceso.
+* Roles y permisos.
 
 ---
 
 ## Multimedia API
 
-Es el núcleo del sistema.
+Responsable de:
 
-Responsabilidades:
+* Gestión de portafolios.
+* Gestión de imágenes.
+* Gestión de videos.
+* Carga de archivos.
+* Eliminación de archivos.
+* Consulta de archivos.
+* Integración con IA.
+* Integración con N8N.
+* Servir la aplicación React compilada.
 
-* Usuarios
+---
+
+# Frontend
+
+La aplicación contará con un único frontend desarrollado en React.
+
+El frontend será compilado y publicado dentro de:
+
+```text
+wwwroot
+```
+
+de Multimedia.API.
+
+Módulos principales:
+
+* Login
+* Registro
+* Dashboard
 * Portafolios
-* Álbumes
-* Imágenes
-* Videos
-* Comentarios
-* Compartir contenido
-
-Arquitectura:
-
-```text
-Onion Architecture
-
-Domain
-Application
-Infrastructure
-Presentation
-```
-
----
-
-## IA Service
-
-Responsabilidades:
-
+* Gestión de Imágenes
+* Gestión de Videos
 * Chat IA
-* Etiquetado automático
-* Descripción automática
-* Búsqueda inteligente
+* Automatizaciones
+* Perfil de Usuario
 
-Ejemplos:
+---
+
+# Comunicación Entre Servicios
+
+## Comunicación Síncrona
+
+REST API mediante HTTP.
 
 ```text
-Mostrar fotos de playa
-
-Mostrar videos de vacaciones
-
-Buscar imágenes con perros
+Frontend
+    |
+Multimedia API
+    |
+Auth API
 ```
 
 ---
 
-## Media Processor
+## Comunicación Asíncrona
 
-Responsabilidades:
-
-* Optimización de imágenes
-* Compresión de videos
-* Conversión de formatos
-* Generación de miniaturas
-
-Herramientas:
-
-```text
-FFmpeg
-ImageSharp
-```
-
----
-
-## RabbitMQ
-
-Responsabilidades:
-
-* Comunicación asíncrona
-* Procesamiento en segundo plano
-
-Eventos:
-
-```text
-ImageUploaded
-VideoUploaded
-ImageOptimized
-VideoOptimized
-```
-
----
-
-## SQL Server
-
-Responsabilidades:
-
-* Persistencia de datos
-
-Almacena:
-
-```text
-Usuarios
-Roles
-Portafolios
-Álbumes
-Metadatos
-Etiquetas IA
-```
-
-No almacena:
-
-```text
-Imágenes
-Videos
-```
-
----
-
-# Almacenamiento Local
-
-Las imágenes y videos serán almacenados en una carpeta compartida del host.
-
-Estructura:
-
-```text
-Storage
-
-├── images
-├── videos
-├── thumbnails
-└── optimized
-```
+RabbitMQ será utilizado para publicar eventos de negocio.
 
 Ejemplo:
 
 ```text
-Storage/images/foto1.webp
+Usuario sube un video
 
-Storage/videos/video1.mp4
-
-Storage/thumbnails/video1.jpg
-
-Storage/optimized/foto1.webp
+Multimedia API
+       |
+       | Publica Evento
+       v
+    RabbitMQ
+       |
+       v
+      N8N
 ```
+
+Eventos posibles:
+
+* ArchivoSubido
+* VideoProcesado
+* ImagenEliminada
+* PortafolioCreado
 
 ---
 
-# Flujo de Imagen
+# Arquitectura de Cada Microservicio
+
+Cada microservicio seguirá Arquitectura Onion.
+
+Ejemplo:
 
 ```text
-Usuario
+Auth.API
 
-↓
-
-React
-
-↓
-
-Multimedia API
-
-↓
-
-Storage/images
-
-↓
-
-RabbitMQ
-
-↓
-
-Media Processor
-
-↓
-
-Storage/optimized
-
-↓
-
-SQL Server
+├── API
+├── Application
+├── Domain
+└── Infrastructure
 ```
 
----
-
-# Flujo de Video
+La misma estructura será utilizada para:
 
 ```text
-Usuario
-
-↓
-
-React
-
-↓
-
-Multimedia API
-
-↓
-
-Storage/videos
-
-↓
-
-RabbitMQ
-
-↓
-
-Media Processor
-
-↓
-
-FFmpeg
-
-↓
-
-Storage/optimized
-
-↓
-
-Thumbnail
-
-↓
-
-SQL Server
+Auth.API
+Multimedia.API
 ```
 
 ---
 
 # Base de Datos
 
-Entidades principales:
+Se utilizará SQL Server como motor principal.
 
-## User
+Para simplificar el desarrollo académico se utilizará una única base de datos compartida:
 
 ```text
-Id
-Name
-Email
-PasswordHash
-Role
+MultimediaDB
 ```
 
-## Portfolio
+Las tablas serán administradas mediante migraciones de Entity Framework Core.
+
+---
+
+# Almacenamiento Multimedia
+
+Los archivos serán almacenados mediante volúmenes Docker.
 
 ```text
-Id
-Name
-Description
-UserId
+/uploads/images
+
+/uploads/videos
 ```
 
-## Album
+La metadata será almacenada en SQL Server.
+
+---
+
+# Estructura del Proyecto
 
 ```text
-Id
-Name
-PortfolioId
-```
+multimedia-platform/
 
-## MediaFile
-
-```text
-Id
-FileName
-FilePath
-FileType
-FileSize
-UploadDate
-UserId
-AlbumId
+├── services/
+│   ├── Auth.API/
+│   └── Multimedia.API/
+│
+├── nginx/
+│
+├── uploads/
+│   ├── images/
+│   └── videos/
+│
+├── docker-compose.yml
+│
+└── README.md
 ```
 
 ---
 
-# Estructura del Repositorio
+# Contenedores Docker
+
+La solución estará compuesta por los siguientes contenedores:
+
+* nginx
+* auth-api
+* multimedia-api
+* sqlserver
+* rabbitmq
+* n8n
+
+Total: 6 contenedores.
+
+Si RabbitMQ no es requerido por la materia:
+
+* nginx
+* auth-api
+* multimedia-api
+* sqlserver
+* n8n
+
+Total: 5 contenedores.
+
+---
+
+# Dominios Locales
 
 ```text
-multimedia-platform
+multimedia.local
 
-backend
-│
-├── auth-service
-├── multimedia-api
-├── ai-service
-└── media-processor
+api.multimedia.local
 
-frontend
-│
-└── react-app
+n8n.multimedia.local
+```
 
-storage
-│
-├── images
-├── videos
-├── thumbnails
-└── optimized
+Archivo hosts:
 
-infra
-│
-├── nginx
-│
-└── docker-compose.yml
+```text
+127.0.0.1 multimedia.local
+
+127.0.0.1 api.multimedia.local
+
+127.0.0.1 n8n.multimedia.local
 ```
 
 ---
 
-# Docker Compose
+# Reverse Proxy
 
-Contenedores:
-
-```text
-nginx
-auth-service
-multimedia-api
-ai-service
-media-processor
-rabbitmq
-sqlserver
-```
-
-Total:
+Nginx será responsable de enrutar las solicitudes.
 
 ```text
-7 contenedores
+/api/auth/*
+        |
+        └── Auth API
+
+/api/multimedia/*
+        |
+        └── Multimedia API
 ```
 
 ---
 
-# Roadmap
+# Ejecución del Proyecto
 
-## Fase 1
+## Construcción
 
-* Registro
-* Login
-* JWT
-* Portafolios
+```bash
+docker compose build
+```
 
-## Fase 2
+## Inicio
 
-* Álbumes
-* Subida de imágenes
+```bash
+docker compose up -d
+```
 
-## Fase 3
+## Ver contenedores
 
-* Subida de videos
-* Optimización multimedia
+```bash
+docker ps
+```
 
-## Fase 4
+## Ver logs
 
-* Chat IA
+```bash
+docker compose logs -f
+```
 
-## Fase 5
+## Detener servicios
 
-* Búsqueda inteligente
+```bash
+docker compose down
+```
 
 ---
 
-# Objetivo Académico
+# Características Implementadas
 
-Demostrar el uso de:
-
+* Arquitectura de Microservicios
 * Arquitectura Onion
-* Docker
-* RabbitMQ
-* SQL Server
+* ASP.NET Core .NET 10
 * React + TypeScript
-* .NET 10
-* Procesamiento multimedia
+* SQL Server
+* Entity Framework Core
+* JWT Authentication
+* Docker
+* Docker Compose
+* Nginx Reverse Proxy
+* RabbitMQ
+* N8N
 * Integración con Inteligencia Artificial
-* Comunicación entre servicios
+* Gestión de Imágenes
+* Gestión de Videos
+* Gestión de Portafolios Multimedia
+* Almacenamiento Persistente mediante Volúmenes Docker
+* Comunicación Asíncrona Basada en Eventos
 
-sin necesidad de desplegar en la nube ni utilizar infraestructura distribuida compleja.
+---
+
